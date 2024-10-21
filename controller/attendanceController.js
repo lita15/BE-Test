@@ -2,6 +2,7 @@ const Attendance = require("../model/attendance");
 const puppeteer = require("puppeteer");
 const path = require("path");
 const ejs = require("ejs");
+const moment = require("moment");
 
 // Create Attendance
 const createAttendance = async (req, res) => {
@@ -15,6 +16,8 @@ const createAttendance = async (req, res) => {
     signature,
     meetWith,
     gender,
+    noPhone,
+    education,
   } = req.body;
 
   try {
@@ -35,6 +38,8 @@ const createAttendance = async (req, res) => {
       signature,
       meetWith,
       gender,
+      noPhone,
+      education,
     });
     const templatePath = path.join(
       __dirname,
@@ -45,13 +50,16 @@ const createAttendance = async (req, res) => {
 
     const html = await ejs.renderFile(templatePath, {
       fullName,
-      checkIn: new Date(checkIn).toLocaleString(),
+      // checkIn: new Date(checkIn).toLocaleString(),
+      checkIn: moment(checkIn).format("dddd, DD MMMM YYYY, HH:mm"),
       address,
       purpose,
       identity,
       numberCard,
       signature,
       meetWith,
+      noPhone,
+      education,
     });
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -99,9 +107,18 @@ const getAllAttendances = async (req, res) => {
     if (req.query.fullName) {
       filters.fullName = { $regex: req.query.fullName, $options: "i" };
     }
+    // if (req.query.checkIn) {
+    //   filters.checkIn = { $regex: req.query.checkIn, $options: "i" };
+    // }
+
     if (req.query.checkIn) {
-      filters.checkIn = { $regex: req.query.checkIn, $options: "i" };
+      const checkInDate = new Date(req.query.checkIn);
+      filters.checkIn = {
+        $gte: new Date(checkInDate.setHours(0, 0, 0, 0)),
+        $lt: new Date(checkInDate.setHours(23, 59, 59, 999)),
+      };
     }
+
     if (req.query.address) {
       filters.address = { $regex: req.query.address, $options: "i" };
     }

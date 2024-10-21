@@ -43,6 +43,14 @@ const attendanceSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    noPhone: {
+      type: String,
+      required: true,
+    },
+    education: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
